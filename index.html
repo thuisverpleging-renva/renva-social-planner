@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RENVA Social Planner 2026</title>
+<style>
+  :root {
+    --green: #1D9E75;
+    --green-light: #E1F5EE;
+    --green-dark: #0F6E56;
+    --bg: #ffffff;
+    --bg2: #f7f6f2;
+    --bg3: #f0efe9;
+    --text: #1a1a1a;
+    --text2: #666;
+    --text3: #999;
+    --border: rgba(0,0,0,0.1);
+    --border2: rgba(0,0,0,0.18);
+    --radius: 8px;
+    --radius-lg: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg2); color: var(--text); min-height: 100vh; }
+
+  .topbar { background: var(--green); color: white; padding: 14px 20px; display: flex; align-items: center; gap: 14px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+  .topbar-logo { width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; flex-shrink: 0; }
+  .topbar-title { font-size: 17px; font-weight: 600; }
+  .topbar-sub { font-size: 12px; opacity: 0.8; margin-top: 1px; }
+  .topbar-badge { margin-left: auto; background: rgba(255,255,255,0.2); border-radius: 20px; padding: 3px 10px; font-size: 11px; white-space: nowrap; }
+
+  .container { max-width: 720px; margin: 0 auto; padding: 20px 16px; }
+
+  .tabs { display: flex; gap: 4px; background: white; border-radius: var(--radius-lg); padding: 5px; margin-bottom: 20px; border: 0.5px solid var(--border); }
+  .tab { flex: 1; padding: 9px 8px; border: none; background: transparent; border-radius: var(--radius); font-size: 13px; cursor: pointer; color: var(--text2); font-family: inherit; transition: all .15s; white-space: nowrap; }
+  .tab.active { background: var(--green); color: white; font-weight: 600; }
+  .section { display: none; } .section.active { display: block; }
+
+  /* HOWTO */
+  .card { background: white; border-radius: var(--radius-lg); border: 0.5px solid var(--border); padding: 18px; margin-bottom: 14px; }
+  .card-title { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+  .card-title .icon { width: 28px; height: 28px; border-radius: 50%; background: var(--green-light); display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+  .step { display: flex; gap: 12px; margin-bottom: 14px; }
+  .step-num { min-width: 26px; height: 26px; border-radius: 50%; background: var(--green); color: white; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+  .step-body strong { font-size: 14px; font-weight: 600; color: var(--text); display: block; margin-bottom: 3px; }
+  .step-body p { font-size: 13px; color: var(--text2); line-height: 1.5; }
+  .tip-box { background: var(--bg2); border-left: 3px solid var(--green); border-radius: 0 var(--radius) var(--radius) 0; padding: 12px 14px; font-size: 13px; color: var(--text2); line-height: 1.7; margin-top: 6px; }
+  .tip-box strong { color: var(--text); font-weight: 600; }
+  .legend-row { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+  .badge { display: inline-block; font-size: 11px; padding: 3px 9px; border-radius: 20px; font-weight: 500; }
+  .b-zorg { background: #E1F5EE; color: #0F6E56; }
+  .b-feest { background: #E6F1FB; color: #185FA5; }
+  .b-bewustzijn { background: #FAEEDA; color: #854F0B; }
+  .b-mantelzorg { background: #FBEAF0; color: #993556; }
+  .b-overig { background: #f1efe8; color: #5F5E5A; }
+  .src-badge { font-size: 10px; padding: 1px 6px; border-radius: 10px; background: var(--green-light); color: var(--green-dark); font-weight: 600; }
+  .legend-text { font-size: 12px; color: var(--text2); }
+
+  /* UPCOMING */
+  .stats-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 18px; }
+  .stat-card { background: white; border-radius: var(--radius-lg); border: 0.5px solid var(--border); padding: 14px; text-align: center; }
+  .stat-num { font-size: 28px; font-weight: 700; color: var(--green); }
+  .stat-lbl { font-size: 12px; color: var(--text2); margin-top: 3px; }
+  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .section-header h2 { font-size: 15px; font-weight: 600; }
+  .month-nav { display: flex; align-items: center; gap: 8px; }
+  .month-nav button { background: white; border: 0.5px solid var(--border); border-radius: var(--radius); padding: 6px 11px; cursor: pointer; color: var(--text2); font-family: inherit; font-size: 13px; transition: all .15s; }
+  .month-nav button:hover { border-color: var(--green); color: var(--green); }
+  .month-nav span { font-size: 14px; font-weight: 600; min-width: 130px; text-align: center; }
+  .day-card { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: white; border: 0.5px solid var(--border); border-radius: var(--radius-lg); margin-bottom: 8px; cursor: pointer; transition: all .15s; }
+  .day-card:hover { border-color: var(--green); transform: translateX(2px); }
+  .day-card.today-card { border-color: var(--green); border-width: 1.5px; }
+  .day-card.top-card { border-left: 3px solid #f0a500; }
+  .day-badge { min-width: 44px; text-align: center; }
+  .day-badge .dn { font-size: 22px; font-weight: 700; color: var(--text); line-height: 1; }
+  .day-badge .dm { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: .5px; }
+  .day-info { flex: 1; min-width: 0; }
+  .day-name { font-size: 14px; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .day-desc { font-size: 12px; color: var(--text2); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 340px; }
+  .day-tags { display: flex; gap: 4px; margin-top: 5px; flex-wrap: wrap; }
+  .countdown { font-size: 12px; color: var(--text3); text-align: right; white-space: nowrap; }
+  .countdown.soon { color: var(--green); font-weight: 600; }
+  .countdown.top { color: #f0a500; font-weight: 600; }
+  .no-events { text-align: center; padding: 3rem 1rem; color: var(--text2); }
+  .no-events span { font-size: 36px; display: block; margin-bottom: 10px; }
+
+  /* CALENDAR */
+  .cal-wrap { background: white; border-radius: var(--radius-lg); border: 0.5px solid var(--border); padding: 16px; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 3px; }
+  .cal-hdr { font-size: 11px; color: var(--text3); text-align: center; padding: 6px 0; font-weight: 600; }
+  .cal-day { aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 13px; border-radius: var(--radius); cursor: pointer; position: relative; color: var(--text); transition: all .1s; }
+  .cal-day:hover { background: var(--bg2); }
+  .cal-day.has-ev { font-weight: 700; }
+  .cal-day.has-ev::after { content:''; width:5px; height:5px; background: var(--green); border-radius: 50%; position: absolute; bottom: 3px; }
+  .cal-day.today-c { background: var(--green-light); color: var(--green-dark); font-weight: 700; }
+  .cal-day.other-m { color: var(--text3); opacity: .4; }
+  .cal-day.sel { background: var(--green); color: white; }
+  .cal-day.sel::after { background: white; }
+  .ev-detail { margin-top: 12px; }
+  .ev-item { background: white; border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 14px; margin-bottom: 8px; }
+  .ev-item h3 { font-size: 14px; font-weight: 600; margin-bottom: 5px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .ev-item p { font-size: 13px; color: var(--text2); line-height: 1.5; }
+  .ev-btn { margin-top: 10px; padding: 8px 16px; background: var(--green); border: none; border-radius: var(--radius); color: white; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; transition: opacity .15s; }
+  .ev-btn:hover { opacity: .9; }
+
+  /* CREATE */
+  .create-card { background: white; border-radius: var(--radius-lg); border: 0.5px solid var(--border); padding: 20px; }
+  .create-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  .create-title span { color: var(--green); }
+  label.lbl { display: block; font-size: 13px; color: var(--text2); margin-bottom: 6px; font-weight: 500; }
+  select, input[type=text] { width: 100%; padding: 10px 12px; border: 0.5px solid var(--border2); border-radius: var(--radius); font-size: 14px; font-family: inherit; color: var(--text); background: white; margin-bottom: 14px; transition: border-color .15s; }
+  select:focus, input:focus { outline: none; border-color: var(--green); }
+  .platform-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-bottom: 14px; }
+  .plat-btn { padding: 10px 8px; border: 0.5px solid var(--border2); border-radius: var(--radius); text-align: center; cursor: pointer; font-size: 13px; background: white; color: var(--text2); transition: all .15s; font-family: inherit; font-weight: 500; }
+  .plat-btn:hover { border-color: var(--green); }
+  .plat-btn.sel { border-color: var(--green); background: var(--green-light); color: var(--green-dark); font-weight: 700; }
+  .tone-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 8px; margin-bottom: 14px; }
+  .tone-btn { padding: 10px 12px; border: 0.5px solid var(--border2); border-radius: var(--radius); text-align: left; cursor: pointer; font-size: 13px; background: white; color: var(--text2); transition: all .15s; font-family: inherit; }
+  .tone-btn:hover { border-color: var(--green); }
+  .tone-btn.sel { border-color: var(--green); background: var(--green-light); color: var(--green-dark); font-weight: 600; }
+  .tone-btn small { display: block; font-size: 11px; opacity: .75; margin-top: 2px; }
+  .gen-btn { width: 100%; padding: 13px; background: var(--green); border: none; border-radius: var(--radius); color: white; font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 8px; transition: opacity .15s; }
+  .gen-btn:hover { opacity: .9; }
+  .gen-btn:disabled { opacity: .5; cursor: not-allowed; }
+  .result-section { margin-top: 18px; }
+  .res-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: .7px; font-weight: 600; margin-bottom: 8px; }
+  .caption-box { background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 14px; font-size: 14px; line-height: 1.7; white-space: pre-wrap; color: var(--text); min-height: 80px; }
+  .hashtags-box { background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 12px 14px; font-size: 13px; color: var(--green-dark); line-height: 1.9; margin-top: 10px; font-weight: 500; }
+  .copy-btn { margin-top: 8px; padding: 8px 16px; border: 0.5px solid var(--border2); border-radius: var(--radius); background: white; font-size: 13px; cursor: pointer; color: var(--text2); font-family: inherit; font-weight: 500; transition: all .15s; }
+  .copy-btn:hover { border-color: var(--green); color: var(--green); }
+  .copy-btn.copied { background: var(--green-light); color: var(--green-dark); border-color: var(--green); }
+  .visual-wrap { margin-top: 14px; background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 14px; }
+  .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,.35); border-top-color: white; border-radius: 50%; animation: spin .7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* API KEY */
+  .apikey-banner { background: #FAEEDA; border: 1px solid #f0c060; border-radius: var(--radius); padding: 12px 16px; margin-bottom: 16px; font-size: 13px; color: #854F0B; display: flex; align-items: flex-start; gap: 10px; }
+  .apikey-banner span { font-size: 18px; flex-shrink: 0; }
+  .apikey-input-row { display: flex; gap: 8px; margin-top: 8px; }
+  .apikey-input-row input { flex: 1; padding: 8px 10px; border: 1px solid #f0c060; border-radius: var(--radius); font-size: 13px; font-family: inherit; background: white; margin-bottom: 0; }
+  .apikey-input-row button { padding: 8px 14px; background: #854F0B; border: none; border-radius: var(--radius); color: white; font-size: 13px; cursor: pointer; font-family: inherit; font-weight: 600; white-space: nowrap; }
+
+  @media (max-width: 480px) {
+    .topbar-sub { display: none; }
+    .stats-row { grid-template-columns: repeat(3,1fr); }
+    .day-desc { max-width: 200px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-logo">RNV</div>
+  <div>
+    <div class="topbar-title">RENVA Social Planner</div>
+    <div class="topbar-sub">Thuisverpleging Jabbeke &amp; regio</div>
+  </div>
+  <div class="topbar-badge">55 zorgdagen 2026</div>
+</div>
+
+<div class="container">
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('howto')">📖 Gebruik</button>
+    <button class="tab" onclick="switchTab('upcoming')">📅 Aankomend</button>
+    <button class="tab" onclick="switchTab('calendar')">🗓 Kalender</button>
+    <button class="tab" onclick="switchTab('create')">✨ Post maken</button>
+  </div>
+
+  <!-- HOW TO USE -->
+  <div class="section active" id="tab-howto">
+    <div class="card">
+      <div class="card-title"><div class="icon">🚀</div> Zo gebruik je de RENVA Social Planner</div>
+      <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Open "Aankomend"</strong><p>Bekijk welke zorgdagen eraan komen. Groene countdown = binnenkort. Plan je post minstens 3–5 dagen op voorhand.</p></div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Klik op een dag</strong><p>Klikken op een dag stuurt je automatisch naar "Post maken" met die dag al ingevuld. Gebruik de kalender voor een maandoverzicht.</p></div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Kies platform &amp; toon</strong><p>Facebook voor patiënten/families · LinkedIn voor huisartsen · Instagram voor visuele posts. Stem de toon af op de dag.</p></div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-body"><strong>Voeg context toe (optioneel)</strong><p>Bv. "wij bieden wondzorg aan huis" of "team Jabbeke staat klaar". Dit maakt de post persoonlijker voor RENVA.</p></div></div>
+      <div class="step"><div class="step-num">5</div><div class="step-body"><strong>Genereer &amp; kopieer</strong><p>AI schrijft caption + hashtags. Kopieer met één klik. Screenshot de visuele preview of klik "Andere stijl" voor een variatie.</p></div></div>
+      <div class="step"><div class="step-num">6</div><div class="step-body"><strong>Post op je socials</strong><p>Plak caption + hashtags in Facebook/Instagram/LinkedIn. Voeg de visual toe als afbeelding. Ideale posttijden hieronder.</p></div></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><div class="icon">💡</div> Slimme tips voor RENVA</div>
+      <div class="tip-box">
+        <strong>⏰ Beste posttijden</strong><br>
+        Facebook/Instagram: dinsdag t/m donderdag, 18u–20u (mantelzorgers online na werk)<br>
+        LinkedIn: dinsdag t/m donderdag, 7u–9u (huisartsen voor hun werkdag)<br><br>
+        <strong>⭐ Topprioriteit-dagen (niet missen!)</strong><br>
+        🩺 12 mei — Dag van de Verpleegkundige → zet je team in de kijker<br>
+        💙 14 nov — Wereld Diabetesdag → kernservice van RENVA<br>
+        💛 23 jun — Dag van de Mantelzorger → bereikt families direct<br>
+        🕊️ 10 okt — Dag van de Palliatieve Zorg → toont expertise<br>
+        🧡 21 sep — Alzheimerdag → ouderen &amp; mantelzorgers<br>
+        🏥 14 mrt — Dag van de Zorg → presenteer heel RENVA<br><br>
+        <strong>📸 Visual gebruiken?</strong> Screenshot de preview in de app en voeg toe als afbeelding. Of gebruik de kleuren en tekst als basis in Canva.<br><br>
+        <strong>🔁 Hashtags</strong> Gebruik altijd #thuisverpleging #RENVA #Jabbeke + dag-specifieke hashtags.
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><div class="icon">🏷️</div> Legenda van labels &amp; bronnen</div>
+      <div class="legend-row"><span class="badge b-zorg">zorg</span><span class="legend-text">Directe zorgdagen — verpleging, wonden, diabetes, palliatief…</span></div>
+      <div class="legend-row"><span class="badge b-bewustzijn">bewustzijn</span><span class="legend-text">Educatieve dagen — preventie, ziekte, gezondheid</span></div>
+      <div class="legend-row"><span class="badge b-mantelzorg">mantelzorg</span><span class="legend-text">Gericht op mantelzorgers &amp; families van patiënten</span></div>
+      <div class="legend-row"><span class="badge b-feest">feestdag</span><span class="legend-text">Feestdagen — warme, seizoensgebonden posts</span></div>
+      <div class="legend-row"><span class="badge b-overig">overig</span><span class="legend-text">Breed inzetbaar — diversiteit, welzijn, sociaal</span></div>
+      <div style="margin-top:12px;font-size:12px;color:var(--text2);line-height:1.8">
+        <span class="src-badge">W</span> bron: weliswaar.be (Vlaams zorgmagazine) &nbsp;|&nbsp;
+        <span class="src-badge">F</span> bron: fijnedagvan.nl &nbsp;|&nbsp;
+        <span class="src-badge">R</span> RENVA eigen kalender
+      </div>
+    </div>
+  </div>
+
+  <!-- UPCOMING -->
+  <div class="section" id="tab-upcoming">
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-num" id="st-total">0</div><div class="stat-lbl">dit jaar</div></div>
+      <div class="stat-card"><div class="stat-num" id="st-soon">0</div><div class="stat-lbl">volgende 30 dagen</div></div>
+      <div class="stat-card"><div class="stat-num" id="st-today">0</div><div class="stat-lbl">vandaag</div></div>
+    </div>
+    <div class="section-header">
+      <h2>Zorgdagen &amp; feestdagen</h2>
+      <div class="month-nav">
+        <button onclick="changeMonth(-1)">&#8592;</button>
+        <span id="month-lbl"></span>
+        <button onclick="changeMonth(1)">&#8594;</button>
+      </div>
+    </div>
+    <div id="days-list"></div>
+  </div>
+
+  <!-- CALENDAR -->
+  <div class="section" id="tab-calendar">
+    <div class="section-header" style="margin-bottom:12px">
+      <h2>Kalenderoverzicht</h2>
+      <div class="month-nav">
+        <button onclick="changeCalMonth(-1)">&#8592;</button>
+        <span id="cal-lbl"></span>
+        <button onclick="changeCalMonth(1)">&#8594;</button>
+      </div>
+    </div>
+    <div class="cal-wrap">
+      <div class="cal-grid" id="cal-hdrs"></div>
+      <div class="cal-grid" id="cal-grid" style="margin-top:4px"></div>
+    </div>
+    <div class="ev-detail" id="ev-detail"></div>
+  </div>
+
+  <!-- CREATE -->
+  <div class="section" id="tab-create">
+    <div class="create-card">
+      <div class="create-title">✨ <span>Post genereren</span> voor RENVA</div>
+
+      <div id="apikey-section">
+        <div class="apikey-banner">
+          <span>🔑</span>
+          <div>
+            <strong>API-sleutel vereist voor postcreatie</strong><br>
+            Voer eenmalig je Anthropic API-sleutel in om posts te genereren. Je sleutel blijft lokaal op dit apparaat (localStorage).<br>
+            Geen sleutel? Maak gratis een account op <a href="https://console.anthropic.com" target="_blank" style="color:#854F0B">console.anthropic.com</a>
+            <div class="apikey-input-row">
+              <input type="password" id="api-key-input" placeholder="sk-ant-..." />
+              <button onclick="saveApiKey()">Opslaan</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <label class="lbl">Dag / aanleiding</label>
+      <select id="gen-select"><option value="">— kies een dag —</option></select>
+
+      <label class="lbl">Platform</label>
+      <div class="platform-grid">
+        <button class="plat-btn sel" onclick="selPlat(this,'Facebook')">📘 Facebook</button>
+        <button class="plat-btn" onclick="selPlat(this,'Instagram')">📸 Instagram</button>
+        <button class="plat-btn" onclick="selPlat(this,'LinkedIn')">💼 LinkedIn</button>
+      </div>
+
+      <label class="lbl">Toon</label>
+      <div class="tone-grid">
+        <button class="tone-btn sel" onclick="selTone(this,'warm')">Warm &amp; persoonlijk<small>dicht bij patiënt</small></button>
+        <button class="tone-btn" onclick="selTone(this,'professioneel')">Professioneel<small>voor huisartsen</small></button>
+        <button class="tone-btn" onclick="selTone(this,'bewust')">Bewustmakend<small>educatief</small></button>
+        <button class="tone-btn" onclick="selTone(this,'feestelijk')">Feestelijk<small>vieren &amp; bedanken</small></button>
+      </div>
+
+      <label class="lbl">Extra context <span style="font-weight:400;opacity:.6">(optioneel)</span></label>
+      <input type="text" id="extra-ctx" placeholder="bv. wondzorg, nieuw teamlid, actie in Jabbeke..." />
+
+      <button class="gen-btn" id="gen-btn" onclick="generatePost()">✨ Post genereren</button>
+
+      <div id="gen-result" style="display:none">
+        <div class="result-section">
+          <div class="res-label">Caption</div>
+          <div class="caption-box" id="cap-box"></div>
+          <button class="copy-btn" onclick="copyEl('cap-box',this)">📋 Kopieer caption</button>
+        </div>
+        <div class="result-section">
+          <div class="res-label">Hashtags</div>
+          <div class="hashtags-box" id="hash-box"></div>
+          <button class="copy-btn" onclick="copyEl('hash-box',this)">📋 Kopieer hashtags</button>
+        </div>
+        <div class="visual-wrap">
+          <div class="res-label">Visuele post preview</div>
+          <div id="vis-container"></div>
+          <button class="copy-btn" style="margin-top:10px" onclick="regenVis()">🔄 Andere stijl</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+const MNL=['januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december'];
+const DNL=['Ma','Di','Wo','Do','Vr','Za','Zo'];
+const TODAY=new Date();
+let curM=TODAY.getMonth(),curY=TODAY.getFullYear();
+let calM=TODAY.getMonth(),calY=TODAY.getFullYear();
+let selPlat_='Facebook',selTone_='warm',selCalDay=null;
+let lastVis=null,visIdx=0;
+
+const DAYS=[
+  {date:'2026-01-01',name:'Nieuwjaar',tag:'feest',src:'R',top:false,desc:'Nieuwjaarswens aan patiënten, families en medewerkers. Toon dat RENVA ook in het nieuwe jaar klaarstaat.'},
+  {date:'2026-02-04',name:'Wereldkankerdag',tag:'bewustzijn',src:'W',top:false,desc:'Wereldkankerdag vestigt aandacht op preventie en zorg bij kanker. Thuisverpleging speelt een sleutelrol bij oncologische patiënten thuis.'},
+  {date:'2026-02-09',name:'Wereld Epilepsiedag',tag:'bewustzijn',src:'W',top:false,desc:'Epilepsie en thuiszorg — medicatiebeheer en ondersteuning van patiënten en mantelzorgers.'},
+  {date:'2026-02-14',name:'Valentijnsdag',tag:'overig',src:'R',top:false,desc:'Zorg met liefde — bedank mantelzorgers voor hun toewijding.'},
+  {date:'2026-02-28',name:'Week van de Vrijwilliger',tag:'overig',src:'W',top:false,desc:'Vrijwilligers in de zorg verdienen erkenning. Mantelzorgers en vrijwilligers zijn onmisbaar naast thuisverpleging.'},
+  {date:'2026-03-06',name:'Dag van de Logopedist',tag:'zorg',src:'W',top:false,desc:'Logopedisten en thuisverpleging werken samen bij slikproblemen, CVA-revalidatie. Multidisciplinaire aanpak thuis.'},
+  {date:'2026-03-08',name:'Internationale Vrouwendag',tag:'overig',src:'W',top:false,desc:'Eerbetoon aan vrouwelijke verpleegkundigen en mantelzorgers — de ruggengraat van de thuiszorg.'},
+  {date:'2026-03-12',name:'Wereldnierdag',tag:'bewustzijn',src:'W',top:false,desc:'Nierziekten en thuiszorg — dialysebegeleiding, vochtbalans, medicatiebeheer thuis.'},
+  {date:'2026-03-14',name:'Dag van de Zorg',tag:'zorg',src:'W',top:true,desc:'Dé dag om thuisverpleging in de kijker te zetten. Ideaal moment om RENVA\'s diensten voor te stellen aan huisartsen en patiënten.'},
+  {date:'2026-03-17',name:'Dag van het Sociaal Werk',tag:'overig',src:'W',top:false,desc:'Sociaal werk en thuiszorg gaan hand in hand bij kwetsbare patiënten.'},
+  {date:'2026-03-21',name:'Werelddownsyndroomdag',tag:'bewustzijn',src:'W',top:false,desc:'Inclusieve zorg voor mensen met een beperking — thuisverpleging ondersteunt ook deze doelgroep.'},
+  {date:'2026-03-24',name:'Wereld Tuberculosedag',tag:'bewustzijn',src:'W',top:false,desc:'TB-bewustzijn en infectiepreventie — relevant voor thuisverpleging bij kwetsbare patiënten.'},
+  {date:'2026-04-02',name:'Wereldautismedag',tag:'bewustzijn',src:'W',top:false,desc:'Autisme en thuiszorg — aangepaste zorgverlening voor mensen met ASS en hun families.'},
+  {date:'2026-04-07',name:'Wereldgezondheidsdag',tag:'zorg',src:'W',top:false,desc:'WHO-thema. Ideaal voor een post over preventie, vroegdetectie en de rol van thuisverpleging.'},
+  {date:'2026-04-11',name:'Wereldparkinsondag',tag:'bewustzijn',src:'W',top:false,desc:'Parkinson en thuiszorg — medicatiebeheer, valpreventie, begeleiding van patiënt en mantelzorger.'},
+  {date:'2026-04-12',name:'Pasen',tag:'feest',src:'R',top:false,desc:'Warme paasgroet aan patiënten en medewerkers. Zorg gaat door, ook met Pasen.'},
+  {date:'2026-04-18',name:'Dag van de Rechten van de Patiënt',tag:'zorg',src:'W',top:false,desc:'Patiëntenrechten en respectvolle zorg — toon dat RENVA de patiënt centraal stelt.'},
+  {date:'2026-04-21',name:'Week van de Valpreventie',tag:'zorg',src:'W',top:false,desc:'Valpreventie bij ouderen is een kerntaak van thuisverpleging. Tips voor veiligheid thuis.'},
+  {date:'2026-05-01',name:'Dag van de Arbeid',tag:'feest',src:'R',top:false,desc:'Bedank je verpleegkundig team voor hun onmisbare inzet elke dag.'},
+  {date:'2026-05-05',name:'Wereldastmadag',tag:'bewustzijn',src:'W',top:false,desc:'Astma en COPD — inhalatiebegeleiding en longzorg thuis.'},
+  {date:'2026-05-05',name:'Dag van de Handhygiëne',tag:'zorg',src:'F',top:false,desc:'Handhygiëne is de basis van infectiepreventie in de thuisverpleging.'},
+  {date:'2026-05-12',name:'Dag van de Verpleegkundige',tag:'zorg',src:'W',top:true,desc:'Florence Nightingale\'s verjaardag. Hét moment om het RENVA-team in de kijker te zetten. Topprioriteit!'},
+  {date:'2026-05-12',name:'Europese Dag van de Beroerte',tag:'bewustzijn',src:'F',top:false,desc:'CVA-revalidatie thuis — thuisverpleging begeleidt patiënten na een beroerte.'},
+  {date:'2026-05-19',name:'Dag van de Huisarts',tag:'zorg',src:'F',top:false,desc:'Huisartsen zijn de belangrijkste doorverwijzers van RENVA. Post op LinkedIn!'},
+  {date:'2026-05-21',name:'Hemelvaartsdag',tag:'feest',src:'R',top:false,desc:'Fijne feestdag — zorg gaat door, ook op feestdagen.'},
+  {date:'2026-05-24',name:'Dag van Aandacht voor Sterven',tag:'zorg',src:'F',top:false,desc:'Palliatieve zorg en het omgaan met het levenseinde — een gevoelig maar belangrijk thema voor RENVA.'},
+  {date:'2026-05-30',name:'Wereld MS-dag',tag:'bewustzijn',src:'W',top:false,desc:'Multiple sclerose en thuiszorg — dagelijkse ondersteuning van MS-patiënten thuis.'},
+  {date:'2026-05-31',name:'Werelddag Geen Tabak',tag:'bewustzijn',src:'W',top:false,desc:'Rookstop en gezondheid — preventiepost, relevant voor longpatiënten in thuiszorg.'},
+  {date:'2026-06-01',name:'Pinksteren',tag:'feest',src:'R',top:false,desc:'Feestbegroeting — RENVA wenst iedereen fijne pinksterdagen.'},
+  {date:'2026-06-01',name:'Dag van de Huidprofessional',tag:'zorg',src:'F',top:false,desc:'Wondverzorging en huidzorg zijn kerncompetenties van thuisverpleging.'},
+  {date:'2026-06-14',name:'Werelddag van de Bloedgever',tag:'bewustzijn',src:'W',top:false,desc:'Bewustmaking rond bloeddonatie — verbinden aan thuiszorg en gezondheidszorg.'},
+  {date:'2026-06-15',name:'Dag tegen Ouderenmisbehandeling',tag:'mantelzorg',src:'W',top:false,desc:'Thuisverplegers hebben een signaalfunctie bij ouderenmisbehandeling.'},
+  {date:'2026-06-23',name:'Dag van de Mantelzorger',tag:'mantelzorg',src:'W',top:true,desc:'Topprioriteit. Mantelzorgers zijn de grootste bondgenoten van RENVA. Bereikt families direct.'},
+  {date:'2026-07-11',name:'Vlaamse Feestdag',tag:'feest',src:'R',top:false,desc:'Vlaamse trots — RENVA als lokale Vlaamse zorgverlener in Jabbeke en regio.'},
+  {date:'2026-07-21',name:'Nationale Feestdag België',tag:'feest',src:'R',top:false,desc:'Belgisch feest — iedereen verdient goede zorg, ook thuis.'},
+  {date:'2026-07-28',name:'Wereldhepatitisdag',tag:'bewustzijn',src:'W',top:false,desc:'Hepatitis en infectiepreventie in de thuisverpleging.'},
+  {date:'2026-08-01',name:'Week van de Borstvoeding',tag:'zorg',src:'W',top:false,desc:'Borstvoedingsbegeleiding — kraamzorg en lactatieondersteuning thuis.'},
+  {date:'2026-09-10',name:'Werelddag Zelfmoordpreventie',tag:'bewustzijn',src:'W',top:false,desc:'Mentale gezondheid — thuisverplegers signaleren psychisch lijden en verwijzen door.'},
+  {date:'2026-09-21',name:'Internationale Alzheimerdag',tag:'zorg',src:'W',top:true,desc:'Dementie en thuiszorg — dagelijkse begeleiding van dementerende ouderen en ondersteuning van mantelzorgers.'},
+  {date:'2026-09-24',name:'Werelddovendag',tag:'bewustzijn',src:'W',top:false,desc:'Inclusieve zorg voor slechthorenden en doven — toegankelijke communicatie in de thuiszorg.'},
+  {date:'2026-09-29',name:'Wereldhartdag',tag:'bewustzijn',src:'W',top:false,desc:'Hartpatiënten en thuisverpleging — bloeddrukcontrole, medicatiebeheer, wondzorg na hartoperatie.'},
+  {date:'2026-10-01',name:'Dag van de Ouderen',tag:'mantelzorg',src:'W',top:false,desc:'Ouderen verdienen kwaliteitsvolle zorg thuis. RENVA zet in op welzijn van de oudere patiënt.'},
+  {date:'2026-10-10',name:'Dag van de Palliatieve Zorg',tag:'zorg',src:'W',top:true,desc:'Palliatieve thuiszorg — waardig en comfortabel thuis kunnen sterven. Kernexpertise van RENVA.'},
+  {date:'2026-10-10',name:'Werelddag Geestelijke Gezondheid',tag:'bewustzijn',src:'W',top:false,desc:'Mentaal welzijn van patiënten én verpleegkundigen. Burn-out preventie in de zorgsector.'},
+  {date:'2026-10-12',name:'Wereldreumadag',tag:'bewustzijn',src:'W',top:false,desc:'Reuma en thuiszorg — injectietechnieken, pijnbeheer en dagelijkse ondersteuning thuis.'},
+  {date:'2026-10-15',name:'Dag tegen Kanker',tag:'bewustzijn',src:'W',top:false,desc:'Oncologische thuiszorg — wondzorg, medicatiebeheer, palliatieve begeleiding.'},
+  {date:'2026-10-27',name:'Dag van de Ergotherapeut',tag:'zorg',src:'W',top:false,desc:'Ergotherapeuten en thuisverpleging werken samen voor zelfredzaamheid thuis.'},
+  {date:'2026-10-29',name:'Wereld Beroertensdag',tag:'zorg',src:'R',top:false,desc:'CVA-revalidatie thuis — thuisverpleging begeleidt patiënten na een beroerte.'},
+  {date:'2026-11-01',name:'Allerheiligen',tag:'feest',src:'R',top:false,desc:'Rustige, respectvolle boodschap — palliatieve zorg en de nabijheid van RENVA.'},
+  {date:'2026-11-14',name:'Wereld Diabetesdag',tag:'zorg',src:'W',top:true,desc:'Topprioriteit. Diabeteszorg is een kernactiviteit van RENVA — insuline, voetverzorging, bloedsuikercontrole thuis.'},
+  {date:'2026-11-17',name:'Dag van het Vroeggeboren Kind',tag:'zorg',src:'W',top:false,desc:'Thuiszorg voor prematuren en jonge gezinnen — kraamzorg en gespecialiseerde thuisverpleging.'},
+  {date:'2026-11-19',name:'Wereldmannendag',tag:'bewustzijn',src:'W',top:false,desc:'Mannen zoeken minder snel hulp. Post over het belang van thuiszorg bij mannen.'},
+  {date:'2026-11-25',name:'Dag tegen Geweld op Vrouwen',tag:'bewustzijn',src:'W',top:false,desc:'Signalering van huiselijk geweld — thuisverplegers hebben een signaalfunctie.'},
+  {date:'2026-12-01',name:'Wereldaidsdag',tag:'bewustzijn',src:'W',top:false,desc:'Inclusieve zorg zonder oordeel — RENVA staat open voor alle patiënten.'},
+  {date:'2026-12-03',name:'Dag van Personen met een Handicap',tag:'bewustzijn',src:'W',top:false,desc:'Inclusieve thuiszorg voor mensen met een beperking — toegankelijke en aangepaste zorg thuis.'},
+  {date:'2026-12-06',name:'Sinterklaas',tag:'feest',src:'R',top:false,desc:'Leuke, warme post voor patiënten, families en het team.'},
+  {date:'2026-12-14',name:'Wereldlichtjesdag',tag:'mantelzorg',src:'W',top:false,desc:'Herdenking van verloren dierbaren — nabijheid bij rouwende families en palliatieve zorg.'},
+  {date:'2026-12-25',name:'Kerstmis',tag:'feest',src:'R',top:false,desc:'Warme kerstwens — RENVA staat klaar voor haar patiënten, ook met Kerstmis.'},
+  {date:'2026-12-31',name:'Oudejaarsavond',tag:'feest',src:'R',top:false,desc:'Terugblik op het jaar — bedank team, patiënten en mantelzorgers.'},
+];
+
+// Init
+function init(){
+  checkApiKey();
+  renderStats();
+  renderUpcoming();
+  renderCalendar();
+  populateSelect();
+}
+
+function checkApiKey(){
+  const k=localStorage.getItem('renva_apikey');
+  if(k){document.getElementById('apikey-section').style.display='none';}
+}
+function saveApiKey(){
+  const v=document.getElementById('api-key-input').value.trim();
+  if(!v){alert('Vul een geldige API-sleutel in.');return;}
+  localStorage.setItem('renva_apikey',v);
+  document.getElementById('apikey-section').style.display='none';
+  alert('API-sleutel opgeslagen! Je kan nu posts genereren.');
+}
+
+function switchTab(t){
+  document.querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('active',['howto','upcoming','calendar','create'][i]===t));
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('tab-'+t).classList.add('active');
+}
+
+function getInMonth(y,m){return DAYS.filter(d=>{const dt=new Date(d.date);return dt.getFullYear()===y&&dt.getMonth()===m;});}
+
+function renderStats(){
+  document.getElementById('st-total').textContent=DAYS.filter(d=>new Date(d.date).getFullYear()===2026).length;
+  const f=new Date();f.setDate(f.getDate()+30);
+  document.getElementById('st-soon').textContent=DAYS.filter(d=>{const dt=new Date(d.date);return dt>=TODAY&&dt<=f;}).length;
+  const ts=TODAY.toISOString().split('T')[0];
+  document.getElementById('st-today').textContent=DAYS.filter(d=>d.date===ts).length;
+}
+
+function renderUpcoming(){
+  document.getElementById('month-lbl').textContent=MNL[curM]+' '+curY;
+  const days=getInMonth(curY,curM);
+  const list=document.getElementById('days-list');
+  if(!days.length){list.innerHTML='<div class="no-events"><span>🗓</span>Geen evenementen deze maand</div>';return;}
+  const ts=TODAY.toISOString().split('T')[0];
+  list.innerHTML=days.map(d=>{
+    const dt=new Date(d.date);
+    const isToday=d.date===ts;
+    const diff=Math.ceil((dt-TODAY)/(864e5));
+    const cs=isToday?'<div class="countdown soon">Vandaag! 🎯</div>':diff<0?'':d.top&&diff<=14?`<div class="countdown top">⭐ Over ${diff}d</div>`:diff<=7?`<div class="countdown soon">Over ${diff}d</div>`:`<div class="countdown">Over ${diff}d</div>`;
+    const tagCls='badge b-'+d.tag;
+    return `<div class="day-card${isToday?' today-card':''}${d.top?' top-card':''}" onclick="goCreate('${d.name.replace(/'/g,"\\'")}')">
+      <div class="day-badge"><div class="dn">${dt.getDate()}</div><div class="dm">${MNL[dt.getMonth()].slice(0,3)}</div></div>
+      <div class="day-info">
+        <div class="day-name">${d.name}${d.top?' <span style="font-size:13px">⭐</span>':''} <span class="src-badge">${d.src}</span></div>
+        <div class="day-desc">${d.desc}</div>
+        <div class="day-tags"><span class="${tagCls}">${d.tag}</span></div>
+      </div>
+      ${cs}
+      <span style="color:var(--text3);margin-left:6px">›</span>
+    </div>`;
+  }).join('');
+}
+
+function changeMonth(dir){curM+=dir;if(curM>11){curM=0;curY++;}else if(curM<0){curM=11;curY--;}renderUpcoming();}
+function changeCalMonth(dir){calM+=dir;if(calM>11){calM=0;calY++;}else if(calM<0){calM=11;calY--;}renderCalendar();}
+
+function renderCalendar(){
+  document.getElementById('cal-lbl').textContent=MNL[calM]+' '+calY;
+  document.getElementById('cal-hdrs').innerHTML=DNL.map(d=>`<div class="cal-hdr">${d}</div>`).join('');
+  const first=new Date(calY,calM,1).getDay();
+  const off=first===0?6:first-1;
+  const dim=new Date(calY,calM+1,0).getDate();
+  const evDs=getInMonth(calY,calM).map(d=>new Date(d.date).getDate());
+  const ts=TODAY.toISOString().split('T')[0];
+  let c='';
+  for(let i=0;i<off;i++)c+=`<div class="cal-day other-m"></div>`;
+  for(let d=1;d<=dim;d++){
+    const ds=`${calY}-${String(calM+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    c+=`<div class="cal-day${evDs.includes(d)?' has-ev':''}${ds===ts?' today-c':''}${selCalDay===ds?' sel':''}" onclick="selectCalDay('${ds}')">${d}</div>`;
+  }
+  document.getElementById('cal-grid').innerHTML=c;
+  renderEvDetail();
+}
+
+function selectCalDay(ds){selCalDay=selCalDay===ds?null:ds;renderCalendar();}
+function renderEvDetail(){
+  const el=document.getElementById('ev-detail');
+  if(!selCalDay){el.innerHTML='';return;}
+  const evs=DAYS.filter(d=>d.date===selCalDay);
+  if(!evs.length){el.innerHTML='<div class="ev-item" style="margin-top:12px"><p>Geen zorgdag op deze datum.</p></div>';return;}
+  el.innerHTML=evs.map(ev=>`<div class="ev-item">
+    <h3>${ev.name}${ev.top?' ⭐':''} <span class="src-badge">${ev.src}</span> <span class="badge b-${ev.tag}">${ev.tag}</span></h3>
+    <p>${ev.desc}</p>
+    <button class="ev-btn" onclick="goCreate('${ev.name.replace(/'/g,"\\'")}')">✨ Post maken voor deze dag</button>
+  </div>`).join('');
+}
+
+function populateSelect(){
+  const sel=document.getElementById('gen-select');
+  const seen=new Set();
+  const sorted=[...DAYS].sort((a,b)=>a.date.localeCompare(b.date));
+  sel.innerHTML='<option value="">— kies een dag —</option>'+sorted.filter(d=>{if(seen.has(d.name))return false;seen.add(d.name);return true;}).map(d=>`<option value="${d.name}">${d.name} (${new Date(d.date).toLocaleDateString('nl-BE',{day:'numeric',month:'short'})})</option>`).join('');
+}
+
+function goCreate(name){switchTab('create');document.getElementById('gen-select').value=name;}
+function selPlat(btn,p){selPlat_=p;document.querySelectorAll('.plat-btn').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');}
+function selTone(btn,t){selTone_=t;document.querySelectorAll('.tone-btn').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');}
+
+async function generatePost(){
+  const name=document.getElementById('gen-select').value;
+  if(!name){alert('Kies eerst een dag.');return;}
+  const apiKey=localStorage.getItem('renva_apikey');
+  if(!apiKey){alert('Voer eerst een API-sleutel in bovenaan.');return;}
+  const extra=document.getElementById('extra-ctx').value;
+  const btn=document.getElementById('gen-btn');
+  btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Genereren...';
+  document.getElementById('gen-result').style.display='none';
+  const dd=DAYS.find(d=>d.name===name)||{};
+  const tmap={warm:'warm, menselijk en dicht bij de patiënt',professioneel:'professioneel en zakelijk voor huisartsen en doorverwijzers',bewust:'bewustmakend en educatief',feestelijk:'feestelijk, positief en dankbaar'};
+  const prompt=`Je bent social media copywriter voor Thuisverpleging RENVA, actief in Jabbeke, Varsenare, Snellegem, Zerkegem en Stalhille (West-Vlaanderen, België).
+
+Schrijf een ${selPlat_} post voor: ${name}
+Achtergrondinformatie: ${dd.desc||''}
+Toon: ${tmap[selTone_]}
+Platform: ${selPlat_} — max ${selPlat_==='LinkedIn'?600:300} tekens caption
+${extra?'Extra context van RENVA: '+extra:''}
+
+Geef UITSLUITEND JSON terug (geen markdown, geen uitleg buiten JSON):
+{"caption":"volledige post in Vlaams Nederlands zonder hashtags","hashtags":"6-9 hashtags gescheiden door spaties, mix NL/EN, altijd inclusief #thuisverpleging #RENVA #Jabbeke","kleur":"hex kleurcode passend bij dag","emoji":"één passende emoji","slogan":"inspirerende zin max 6 woorden voor visual"}`;
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})});
+    if(!r.ok)throw new Error('API fout: '+r.status);
+    const data=await r.json();
+    const txt=data.content.map(i=>i.text||'').join('');
+    const parsed=JSON.parse(txt.replace(/```json|```/g,'').trim());
+    document.getElementById('cap-box').textContent=parsed.caption;
+    document.getElementById('hash-box').textContent=parsed.hashtags;
+    document.getElementById('gen-result').style.display='block';
+    lastVis={parsed,name};renderVis();
+  }catch(e){
+    document.getElementById('cap-box').textContent='Er ging iets mis: '+e.message+'\nControleer je API-sleutel en probeer opnieuw.';
+    document.getElementById('hash-box').textContent='';
+    document.getElementById('gen-result').style.display='block';
+    document.getElementById('vis-container').innerHTML='';
+  }
+  btn.disabled=false;btn.innerHTML='✨ Post genereren';
+}
+
+function renderVis(){if(!lastVis)return;[v1,v2,v3][visIdx%3](lastVis.parsed,lastVis.name);}
+function regenVis(){visIdx++;renderVis();}
+
+function v1(p,n){const c=p.kleur||'#1D9E75',sl=p.slogan||n,em=p.emoji||'💚';document.getElementById('vis-container').innerHTML=`<svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" style="width:100%;border-radius:10px;display:block"><rect width="400" height="400" fill="${c}"/><rect x="0" y="272" width="400" height="128" fill="rgba(0,0,0,0.28)"/><circle cx="340" cy="55" r="85" fill="rgba(255,255,255,0.07)"/><circle cx="20" cy="360" r="65" fill="rgba(255,255,255,0.05)"/><text x="30" y="65" font-size="40">${em}</text><text x="30" y="122" font-family="Georgia,serif" font-size="25" font-weight="bold" fill="white">${n.length>22?n.substring(0,22)+'…':n}</text><text x="30" y="152" font-family="Arial,sans-serif" font-size="14" fill="rgba(255,255,255,0.85)">${sl}</text><rect x="30" y="167" width="55" height="3" fill="rgba(255,255,255,0.45)" rx="1"/><text x="30" y="305" font-family="Arial,sans-serif" font-size="22" font-weight="bold" fill="white">RENVA</text><text x="30" y="328" font-family="Arial,sans-serif" font-size="12" fill="rgba(255,255,255,0.8)">Thuisverpleging aan huis</text><text x="30" y="348" font-family="Arial,sans-serif" font-size="11" fill="rgba(255,255,255,0.65)">Jabbeke · Varsenare · Snellegem · regio</text><circle cx="362" cy="338" r="26" fill="rgba(255,255,255,0.15)"/><text x="362" y="344" font-family="Arial,sans-serif" font-size="11" font-weight="bold" fill="white" text-anchor="middle">RNV</text></svg>`;}
+function v2(p,n){const c=p.kleur||'#1D9E75',sl=p.slogan||n,em=p.emoji||'💚';document.getElementById('vis-container').innerHTML=`<svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" style="width:100%;border-radius:10px;display:block"><rect width="400" height="400" fill="#f7f6f2"/><rect x="0" y="0" width="7" height="400" fill="${c}"/><rect x="0" y="0" width="400" height="7" fill="${c}"/><rect x="393" y="0" width="7" height="400" fill="${c}"/><rect x="0" y="393" width="400" height="7" fill="${c}"/><circle cx="200" cy="162" r="76" fill="${c}" opacity="0.11"/><text x="200" y="136" font-size="52" text-anchor="middle">${em}</text><text x="200" y="202" font-family="Georgia,serif" font-size="21" font-weight="bold" fill="#1a1a1a" text-anchor="middle">${n.length>24?n.substring(0,24)+'…':n}</text><text x="200" y="228" font-family="Arial,sans-serif" font-size="13" fill="#666" text-anchor="middle">${sl}</text><rect x="157" y="244" width="86" height="2" fill="${c}" rx="1"/><rect x="28" y="292" width="344" height="75" fill="${c}" rx="10"/><text x="200" y="325" font-family="Arial,sans-serif" font-size="22" font-weight="bold" fill="white" text-anchor="middle">RENVA</text><text x="200" y="350" font-family="Arial,sans-serif" font-size="12" fill="rgba(255,255,255,0.88)" text-anchor="middle">Thuisverpleging · Jabbeke &amp; regio</text></svg>`;}
+function v3(p,n){const c=p.kleur||'#1D9E75',sl=p.slogan||n,em=p.emoji||'💚';const r=parseInt(c.slice(1,3),16),g=parseInt(c.slice(3,5),16),b=parseInt(c.slice(5,7),16);const dk=`rgb(${Math.max(0,r-55)},${Math.max(0,g-55)},${Math.max(0,b-55)})`;document.getElementById('vis-container').innerHTML=`<svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" style="width:100%;border-radius:10px;display:block"><rect width="400" height="400" fill="${dk}"/><rect x="18" y="18" width="364" height="364" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="1" rx="6"/><rect x="0" y="242" width="400" height="158" fill="${c}"/><text x="200" y="115" font-size="62" text-anchor="middle">${em}</text><text x="200" y="170" font-family="Georgia,serif" font-size="20" font-weight="bold" fill="white" text-anchor="middle">${n.length>25?n.substring(0,25)+'…':n}</text><text x="200" y="196" font-family="Arial,sans-serif" font-size="13" fill="rgba(255,255,255,0.68)" text-anchor="middle">${sl}</text><text x="200" y="284" font-family="Arial,sans-serif" font-size="26" font-weight="bold" fill="white" text-anchor="middle">RENVA</text><text x="200" y="309" font-family="Arial,sans-serif" font-size="13" fill="rgba(255,255,255,0.9)" text-anchor="middle">Thuisverpleging aan huis</text><text x="200" y="333" font-family="Arial,sans-serif" font-size="11" fill="rgba(255,255,255,0.72)" text-anchor="middle">Jabbeke · Varsenare · Snellegem · Stalhille</text></svg>`;}
+
+function copyEl(id,btn){
+  const txt=document.getElementById(id).textContent;
+  navigator.clipboard.writeText(txt).then(()=>{
+    if(btn){btn.textContent='✅ Gekopieerd!';btn.classList.add('copied');setTimeout(()=>{btn.textContent=id==='cap-box'?'📋 Kopieer caption':'📋 Kopieer hashtags';btn.classList.remove('copied');},1800);}
+  });
+}
+
+init();
+</script>
+</body>
+</html>
